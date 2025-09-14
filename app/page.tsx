@@ -325,20 +325,20 @@ function ImageCarousel({ images }: { images: any[] }) {
     <div className="relative max-w-4xl mx-auto">
       {/* Main carousel container */}
       <div 
-        className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-800"
+        className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-800 print:shadow-none print:border-gray-400"
         style={{ aspectRatio: '16/10' }}
       >
         {/* Images */}
         <div 
-          className="flex transition-transform duration-500 ease-in-out h-full"
+          className="flex transition-transform duration-500 ease-in-out h-full print:block"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {images.map((img, i) => (
-            <div key={i} className="min-w-full h-full relative">
+            <div key={i} className={`min-w-full h-full relative print:block print:w-full ${i === 0 ? 'print:block' : 'print:hidden'}`}>
               <img 
                 src={img.src} 
                 alt={img.alt || `Professional photo ${i + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover print:object-contain print:h-auto print:max-h-96"
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
                 onError={(e) => {
@@ -348,8 +348,8 @@ function ImageCarousel({ images }: { images: any[] }) {
               />
               {/* Overlay with gradient for better text readability */}
               {img.alt && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
-                  <p className="text-white p-4 text-sm sm:text-base font-medium">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent print:relative print:bg-transparent print:text-black print:p-2">
+                  <p className="text-white p-4 text-sm sm:text-base font-medium print:text-black print:p-1 print:text-xs">
                     {img.alt}
                   </p>
                 </div>
@@ -363,14 +363,14 @@ function ImageCarousel({ images }: { images: any[] }) {
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 group"
+              className="print:hidden absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 group"
               aria-label="Previous image"
             >
               <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform" />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 group"
+              className="print:hidden absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 group"
               aria-label="Next image"
             >
               <ChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform" />
@@ -380,7 +380,7 @@ function ImageCarousel({ images }: { images: any[] }) {
 
         {/* Auto-play indicator */}
         {isAutoPlaying && images.length > 1 && (
-          <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+          <div className="print:hidden absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
             Auto
           </div>
         )}
@@ -388,7 +388,7 @@ function ImageCarousel({ images }: { images: any[] }) {
 
       {/* Dots indicator */}
       {images.length > 1 && (
-        <div className="flex justify-center mt-6 space-x-2">
+        <div className="print:hidden flex justify-center mt-6 space-x-2">
           {images.map((_, i) => (
             <button
               key={i}
@@ -406,14 +406,21 @@ function ImageCarousel({ images }: { images: any[] }) {
 
       {/* Image counter */}
       {images.length > 1 && (
-        <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+        <div className="print:hidden text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
           {currentIndex + 1} of {images.length}
+        </div>
+      )}
+
+      {/* For print: show total image count */}
+      {images.length > 1 && (
+        <div className="hidden print:block text-center mt-4 text-sm text-gray-600">
+          Showing 1 of {images.length} images
         </div>
       )}
 
       {/* Thumbnails (optional, for large screens) */}
       {images.length > 1 && (
-        <div className="hidden lg:flex justify-center mt-6 space-x-2 overflow-x-auto pb-2">
+        <div className="print:hidden hidden lg:flex justify-center mt-6 space-x-2 overflow-x-auto pb-2">
           {images.map((img, i) => (
             <button
               key={i}
@@ -522,8 +529,14 @@ export default function ProfileSite() {
               <span>{dark ? "Light" : "Dark"} mode</span>
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() => {
+                // Small delay to ensure styles are applied
+                setTimeout(() => {
+                  window.print();
+                }, 100);
+              }}
               className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+              title="Print this page or save as PDF"
             >
               <Newspaper className="w-4 h-4"/>
               <span>Print / PDF</span>
@@ -536,20 +549,85 @@ export default function ProfileSite() {
   ), [data, dark]);
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 selection:bg-emerald-300/60 dark:selection:bg-emerald-400/30">
-      {Header}
-
+    <>
       <style jsx global>{`
-        @page { margin: 14mm; }
+        @page { 
+          margin: 14mm;
+          size: A4;
+        }
         @media print {
-          html, body { background: #fff !important; }
-          a { color: #000 !important; text-decoration: underline; }
-          .prose { color: #000 !important; }
-          header { margin-bottom: 12mm; }
-          h1, h2, h3 { break-after: avoid; }
-          section { break-inside: avoid; }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          html, body { 
+            background: #fff !important;
+            color: #000 !important;
+            font-size: 12pt !important;
+            line-height: 1.4 !important;
+          }
+          .dark {
+            background: #fff !important;
+            color: #000 !important;
+          }
+          .dark * {
+            background: transparent !important;
+            color: #000 !important;
+          }
+          a { 
+            color: #000 !important; 
+            text-decoration: underline !important; 
+          }
+          .prose { 
+            color: #000 !important;
+            max-width: none !important;
+          }
+          h1, h2, h3, h4, h5, h6 { 
+            break-after: avoid !important;
+            color: #000 !important;
+            page-break-after: avoid !important;
+          }
+          section { 
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin-bottom: 8mm !important;
+          }
+          header { 
+            margin-bottom: 8mm !important;
+          }
+          /* Hide interactive elements */
+          .print\\:hidden {
+            display: none !important;
+          }
+          /* Ensure proper spacing */
+          .max-w-5xl {
+            max-width: none !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          /* Fix image sizing */
+          img {
+            max-width: 100% !important;
+            height: auto !important;
+            page-break-inside: avoid !important;
+          }
+          /* Carousel adjustments */
+          .relative .absolute {
+            display: none !important;
+          }
+          /* Show only first image in carousel for print */
+          .flex.transition-transform {
+            transform: none !important;
+          }
+          .min-w-full:not(:first-child) {
+            display: none !important;
+          }
         }
       `}</style>
+      
+      <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 selection:bg-emerald-300/60 dark:selection:bg-emerald-400/30 print:bg-white print:text-black">
+        {Header}
 
       {/* About */}
       <Section title="About Me" icon={<ArrowRight className="w-6 h-6"/>} wow>
@@ -693,6 +771,7 @@ export default function ProfileSite() {
         </div>
       </footer>
 
-    </div>
+      </div>
+    </>
   );
 }
