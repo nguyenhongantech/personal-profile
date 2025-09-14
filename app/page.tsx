@@ -345,8 +345,7 @@ function ImageCarousel({ images }: { images: any[] }) {
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
                 onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/avatar.jpeg';
+                  console.error("Loading image error", e)
                 }}
               />
               {/* Overlay with gradient for better text readability */}
