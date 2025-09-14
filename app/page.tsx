@@ -330,15 +330,15 @@ function ImageCarousel({ images }: { images: any[] }) {
       >
         {/* Images */}
         <div 
-          className="flex transition-transform duration-500 ease-in-out"
+          className="flex transition-transform duration-500 ease-in-out h-full print:block"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {images.map((img, i) => (
-            <div key={i} className="min-w-full relative flex items-center justify-center">
+            <div key={i} className={`min-w-full h-full relative print:block print:w-full ${i === 0 ? 'print:block' : 'print:hidden'}`}>
               <img 
                 src={img.src} 
                 alt={img.alt || `Professional photo ${i + 1}`}
-                className="max-w-full max-h-[70vh] w-auto h-auto object-contain"
+                className="w-full h-full object-cover print:object-contain print:h-auto print:max-h-96"
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
                 onError={(e) => {
