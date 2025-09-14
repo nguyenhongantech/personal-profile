@@ -49,7 +49,6 @@ const DEFAULT_CONTENT = {
         org: "Amazon",
         bullets: [
           "One of the Big 5 global tech giants, shaping the future of commerce and innovation. I currently serve as a Strategic Account Manager at Amazon Global Selling Vietnam, where I empower Vietnamese brands to thrive on a global stage.",
-          "3× Country Star of the Month",
         ],
       },
       {
@@ -73,25 +72,24 @@ const DEFAULT_CONTENT = {
         bullets: [
           "Manage key accounts; grow Vietnamese sellers globally",
           "3× Country Star of the Month",
-          "Certified Amazon Advertising Trainer",
-          "Lead B2B initiatives: connect international buyers with Vietnamese manufacturers",
-          "Consult SMEs on cross-border strategy and brand positioning"
+          "Support the development of B2B for Vietnamese wooden product manufacturers by connecting them with international trading/ corporations ",
+          "Consult SMEs on cross-border e-commerce strategies and global brand positioning."
         ]
       },
       {
         org: "UPS Vietnam",
         role: "Account Executive",
         bullets: [
-          "Supported global trade expansion via UPS logistics network",
-          "Top Performance Award for acquisition & growth"
+          "Supported global trade expansion for Vietnamese businesses through UPS’s extensive logistics network.",
+          "Top Performance Award winner for client acquisition and business growth."
         ]
       },
       {
         org: "International Startups",
         role: "Market Expansion & Regional Management",
         bullets: [
-          "RedDoorz – Business Development Manager: opened & scaled local markets; led 4–6 BDs",
-          "VNTravel (Mytour.vn) – Market Manager: strategic hotel partnerships; data-driven growth"
+          "RedDoorz Vietnam – Business Development Manager: Opened and scaled local markets in hospitality and F&B; led a team of 4–6 business developers.",
+          "VNTravel – Market Manager: Built strategic hotel partnerships, developed data-driven growth solutions, and managed key regional accounts."
         ]
       },
       {
@@ -328,18 +326,19 @@ function ImageCarousel({ images }: { images: any[] }) {
       {/* Main carousel container */}
       <div 
         className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-800"
+        style={{ aspectRatio: '16/10' }}
       >
         {/* Images */}
         <div 
-          className="flex transition-transform duration-500 ease-in-out"
+          className="flex transition-transform duration-500 ease-in-out h-full"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {images.map((img, i) => (
-            <div key={i} className="min-w-full relative flex items-center justify-center">
+            <div key={i} className="min-w-full h-full relative">
               <img 
                 src={img.src} 
                 alt={img.alt || `Professional photo ${i + 1}`}
-                className="max-w-full max-h-[70vh] w-auto h-auto object-contain"
+                className="w-full h-full object-cover"
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
                 onError={(e) => {
@@ -441,7 +440,25 @@ function ImageCarousel({ images }: { images: any[] }) {
 
 export default function ProfileSite() {
   const [data, saveData] = useLocalContent();
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(false);
+
+  // Initialize dark mode from localStorage or system preference
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("my_profile_dark_mode");
+      if (saved !== null) {
+        setDark(JSON.parse(saved));
+      } else {
+        // Check system preference
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setDark(systemDark);
+      }
+    } catch {
+      // Fallback to system preference
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setDark(systemDark);
+    }
+  }, []);
 
   // Simple smoke tests to help catch content regressions in dev
   useEffect(() => {
@@ -450,9 +467,19 @@ export default function ProfileSite() {
     console.assert(Array.isArray(data.speaking.items), "[TEST] speaking.items is array");
   }, [data]);
 
+  // Apply dark mode and save preference
   useEffect(() => {
-    if (dark) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
+    if (dark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    
+    try {
+      localStorage.setItem("my_profile_dark_mode", JSON.stringify(dark));
+    } catch {
+      // Ignore localStorage errors
+    }
   }, [dark]);
 
   const Header = useMemo(() => (
