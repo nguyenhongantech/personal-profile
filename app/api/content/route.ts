@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put, list } from "@vercel/blob";
+import fs from "fs";
+import path from "path";
 
 const PASSWORD = process.env.ADMIN_PASSWORD || "";
+
+// Load gallery data from local file
+function loadGallery(): any[] {
+  try {
+    const galleryPath = path.join(process.cwd(), "app", "gallery.json");
+    if (fs.existsSync(galleryPath)) {
+      const galleryData = fs.readFileSync(galleryPath, "utf-8");
+      return JSON.parse(galleryData);
+    }
+  } catch (error) {
+    console.warn("Could not load gallery.json:", error);
+  }
+  return [];
+}
 
 // read content JSON from Blob if token exists, else return 404 to indicate fallback
 async function readFromBlob(): Promise<any | null> {
@@ -20,11 +36,15 @@ async function readFromBlob(): Promise<any | null> {
 
 export async function GET() {
   const data = await readFromBlob();
+  const gallery = loadGallery();
+  
   if (!data) {
-    // Fall back: tell client to use localStorage content
-    return NextResponse.json({ _fallback: true }, { status: 200 });
+    // Fall back: tell client to use localStorage content but provide gallery
+    return NextResponse.json({ _fallback: true, gallery }, { status: 200 });
   }
-  return NextResponse.json(data);
+  
+  // Merge gallery data with profile data
+  return NextResponse.json({ ...data, gallery });
 }
 
 export async function POST(req: NextRequest) {

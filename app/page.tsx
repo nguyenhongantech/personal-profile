@@ -13,7 +13,9 @@ import {
   Edit3,
   Save,
   Moon,
-  Sun
+  Sun,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { link } from "fs";
 import { label } from "framer-motion/client";
@@ -27,6 +29,7 @@ import { label } from "framer-motion/client";
 
 const DEFAULT_CONTENT = {
   name: "Nguyen Thanh Yen My",
+  avatar: "/avatar.jpeg", // Add your avatar image to public/gallery/avatar.jpg
   headline:
     "MBA Scholarship Candidate | Amazon Strategic Account Manager | Business & E-commerce Growth Specialist",
   contact: {
@@ -38,9 +41,27 @@ const DEFAULT_CONTENT = {
   about: {
     greeting: "Hi, I’m My Nguyen",
     text: [
-      "A passionate business leader with nearly 11 years of experience in B2B strategy, digital platforms, supply chain, and global e-commerce.",
-      "My journey spans global corporations and fast-scaling international startups — combining corporate rigor with entrepreneurial agility.",
-      "Highlights include contributions at two world-class companies: Amazon (Big 5 tech) and UPS (Fortune 500 logistics)."
+      "A passionate business leader with nearly 11 years of experience in B2B strategy, digital platforms, supply chain, and global e-commerce. My professional journey spans global corporations and fast-scaling international startups, offering me a rare combination of corporate rigor and entrepreneurial agility.",
+      "What truly distinguishes my career is the privilege of contributing to two of the world’s most influential companies:"
+    ],
+    pillars: [
+      {
+        org: "Amazon",
+        bullets: [
+          "One of the Big 5 global tech giants, shaping the future of commerce and innovation. I currently serve as a Strategic Account Manager at Amazon Global Selling Vietnam, where I empower Vietnamese brands to thrive on a global stage.",
+          "3× Country Star of the Month",
+        ],
+      },
+      {
+        org: "UPS Vietnam",
+        bullets: [
+          "A Fortune 500 logistics powerhouse and Top 3 logistics company by brand value. At UPS Vietnam, I gained hands-on experience in global trade and international market operations.",
+        ],
+      },
+    ],
+    pillarNotes: [
+      "In parallel, I have held leadership roles in fast-growing startups like RedDoorz and VNTravel (Mytour.vn), leading market entry and regional management initiatives.",
+      "This dual background has shaped me into a professional who is both strategic and adaptable, capable of driving growth and market expansion in dynamic, competitive environments."
     ],
   },
   careerHighlights: {
@@ -71,6 +92,13 @@ const DEFAULT_CONTENT = {
         bullets: [
           "RedDoorz – Business Development Manager: opened & scaled local markets; led 4–6 BDs",
           "VNTravel (Mytour.vn) – Market Manager: strategic hotel partnerships; data-driven growth"
+        ]
+      },
+      {
+        org: "Early Career in Media - Travellive Magazine",
+        role: "Account Executive",
+        bullets: [
+          "Managed B2B client relationships and executed strategic communications and marketing campaigns.",
         ]
       }
     ]
@@ -156,29 +184,51 @@ const DEFAULT_CONTENT = {
       }
     ]
   },
-  // Optional: add photos here via the editor (array of {src, alt})
-  gallery: [
-    // Example placeholders – replace with your own URLs
-    // { src: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61", alt: "Speaking at conference" },
-    // { src: "https://images.unsplash.com/photo-1485217988980-11786ced9454", alt: "Workshop training" },
-  ]
+  // Gallery will be loaded from gallery.json generated at build time
+  gallery: [],
 };
 
 function useLocalContent() {
   const [content, setContent] = useState(DEFAULT_CONTENT);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("my_profile_content_v1");
       if (raw) setContent(JSON.parse(raw));
     } catch {}
+
+    // Load gallery images
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        if (data.gallery) {
+          setGalleryImages(data.gallery);
+        }
+      })
+      .catch(() => {
+        // If API fails, try to load local gallery.json
+        fetch('/gallery.json')
+          .then(res => res.json())
+          .then(images => setGalleryImages(images))
+          .catch(console.error);
+      });
   }, []);
+
   const save = (next: typeof DEFAULT_CONTENT) => {
     setContent(next);
     try {
       localStorage.setItem("my_profile_content_v1", JSON.stringify(next));
     } catch {}
   };
-  return [content, save] as const;
+
+  // Merge gallery images into content
+  const contentWithGallery = {
+    ...content,
+    gallery: galleryImages.length > 0 ? galleryImages : content.gallery
+  };
+
+  return [contentWithGallery, save] as const;
 }
 
 function Section({ title, icon, children, wow }: any) {
@@ -236,6 +286,159 @@ function buildMediaHref(label: string): string {
   }
 }
 
+// Image Carousel Component
+function ImageCarousel({ images }: { images: any[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying || images.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, images.length]);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
+    // Resume auto-play after 10 seconds
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  if (!images || images.length === 0) return null;
+
+  return (
+    <div className="relative max-w-4xl mx-auto">
+      {/* Main carousel container */}
+      <div 
+        className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-800"
+      >
+        {/* Images */}
+        <div 
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {images.map((img, i) => (
+            <div key={i} className="min-w-full relative flex items-center justify-center">
+              <img 
+                src={img.src} 
+                alt={img.alt || `Professional photo ${i + 1}`}
+                className="max-w-full max-h-[70vh] w-auto h-auto object-contain"
+                loading={i === 0 ? "eager" : "lazy"}
+                decoding="async"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/avatar.jpeg';
+                }}
+              />
+              {/* Overlay with gradient for better text readability */}
+              {img.alt && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+                  <p className="text-white p-4 text-sm sm:text-base font-medium">
+                    {img.alt}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Navigation arrows */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={goToPrevious}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 group"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={goToNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 group"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform" />
+            </button>
+          </>
+        )}
+
+        {/* Auto-play indicator */}
+        {isAutoPlaying && images.length > 1 && (
+          <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+            Auto
+          </div>
+        )}
+      </div>
+
+      {/* Dots indicator */}
+      {images.length > 1 && (
+        <div className="flex justify-center mt-6 space-x-2">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                i === currentIndex 
+                  ? 'bg-indigo-500 dark:bg-indigo-400 scale-110' 
+                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+              }`}
+              aria-label={`Go to image ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Image counter */}
+      {images.length > 1 && (
+        <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+          {currentIndex + 1} of {images.length}
+        </div>
+      )}
+
+      {/* Thumbnails (optional, for large screens) */}
+      {images.length > 1 && (
+        <div className="hidden lg:flex justify-center mt-6 space-x-2 overflow-x-auto pb-2">
+          {images.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                i === currentIndex 
+                  ? 'border-indigo-500 dark:border-indigo-400 scale-105' 
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+              }`}
+            >
+              <img 
+                src={img.src} 
+                alt={`Thumbnail ${i + 1}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProfileSite() {
   const [data, saveData] = useLocalContent();
   const [dark, setDark] = useState(true);
@@ -257,20 +460,30 @@ export default function ProfileSite() {
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-fuchsia-600/10 to-emerald-500/10 dark:from-indigo-600/30 dark:via-fuchsia-600/20 dark:to-emerald-500/20 print:hidden"/>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-12 sm:py-16">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight"
-            >
-              {data.name}
-            </motion.h1>
-            <p className="mt-3 text-base sm:text-lg opacity-90 max-w-3xl">{data.headline}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Pill><Phone className="w-4 h-4 mr-2"/>{data.contact.phone}</Pill>
-              <Pill><Mail className="w-4 h-4 mr-2"/>{data.contact.email}</Pill>
-              {data.contact.location && <Pill>{data.contact.location}</Pill>}
+          <div className="flex items-center gap-6">
+            {data.avatar && (
+              <img
+                src={data.avatar}
+                alt="Avatar"
+                className="w-48 h-48 rounded-full border object-cover shadow-md"
+                style={{ background: '#fff' }}
+              />
+            )}
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight"
+              >
+                {data.name}
+              </motion.h1>
+              <p className="mt-3 text-base sm:text-lg opacity-90 max-w-3xl">{data.headline}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Pill><Phone className="w-4 h-4 mr-2"/>{data.contact.phone}</Pill>
+                <Pill><Mail className="w-4 h-4 mr-2"/>{data.contact.email}</Pill>
+                {data.contact.location && <Pill>{data.contact.location}</Pill>}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 z-10 print:hidden">
@@ -317,11 +530,31 @@ export default function ProfileSite() {
         {data.about.text.map((t: string, i: number) => (
           <p key={i}>{t}</p>
         ))}
+         <div className="mt-6 space-y-6">
+          {(data.about?.pillars ?? []).map((p: any, idx: number) => (
+            <div key={idx} className="relative pl-6">
+              <span className="absolute left-0 top-2 h-2 w-2 rounded-full bg-emerald-500" />
+              <h3 className="text-base sm:text-lg font-semibold leading-snug">{p.org}</h3>
+              {p.role && <p className="text-sm opacity-80 mb-1">{p.role}</p>}
+              <p className="text-sm leading-relaxed">
+                {(p.bullets ?? []).map((b: string, i: number) => (
+                  <span key={i}>
+                    {b}
+                    {i < (p.bullets?.length ?? 0) - 1 ? " • " : ""}
+                  </span>
+                ))}
+              </p>
+            </div>
+          ))}
+        </div>
+        {data.about.pillarNotes.map((t: string, i: number) => (
+          <p key={i}>{t}</p>
+        ))}
       </Section>
 
       {/* Career Highlights */}
-      <Section title={data.careerHighlights?.title} icon={<Award className="w-6 h-6"/>}>
-        <ul className="list-disc pl-5 space-y-1">
+      <Section title={data.careerHighlights?.title} icon={<Award className="w-6 h-6"/>} wow>
+        <ul className="mt-6 space-y-4">
           {data.careerHighlights.items.map((item: any, i: number) => (
             <li key={i}>
               <strong>{item.org}</strong> - {item.role}
@@ -365,7 +598,7 @@ export default function ProfileSite() {
       </Section>
 
       {/* Education */}
-      <Section title={data.education.title} icon={<GraduationCap className="w-6 h-6"/>}>
+      <Section title={data.education.title} icon={<GraduationCap className="w-6 h-6"/>} wow>
         <ul className="grid sm:grid-cols-2 gap-4">
           {data.education.items.map((e: any, i: number) => (
             <li key={i} className="rounded-xl border p-4">
@@ -378,7 +611,7 @@ export default function ProfileSite() {
       </Section>
 
       {/* Awards */}
-      <Section title={data.awards.title} icon={<Award className="w-6 h-6"/>}>
+      <Section title={data.awards.title} icon={<Award className="w-6 h-6"/>} wow>
         <ul className="grid sm:grid-cols-2 gap-4">
           {data.awards.items.map((a: string, i: number) => (
             <li key={i} className="rounded-xl border p-4">{a}</li>
@@ -387,7 +620,7 @@ export default function ProfileSite() {
       </Section>
 
       {/* Master's Motivation */}
-      <Section title={data.masters.title} icon={<GraduationCap className="w-6 h-6"/>}>
+      <Section title={data.masters.title} icon={<GraduationCap className="w-6 h-6"/>} wow>
         <p className="mb-3">{data.masters.intro}</p>
         <ul className="list-disc pl-5 space-y-1">
           {data.masters.bullets.map((b: string, i: number) => (
@@ -397,7 +630,7 @@ export default function ProfileSite() {
       </Section>
 
       {/* Vision */}
-      <Section title={data.vision.title} icon={<Award className="w-6 h-6"/>}>
+      <Section title={data.vision.title} icon={<Award className="w-6 h-6"/>} wow>
         <div className="grid md:grid-cols-3 gap-4">
           {data.vision.phases.map((p: any, i: number) => (
             <div key={i} className="rounded-2xl border p-5">
@@ -411,23 +644,11 @@ export default function ProfileSite() {
       {/* Gallery */}
       <Section title="Photo Gallery" icon={<Award className="w-6 h-6"/>} wow>
         {(!data.gallery || data.gallery.length === 0) ? (
-          <div className="rounded-xl border p-5 text-sm opacity-80">
-            <p>Add photos by clicking <strong>Edit Content</strong> and inserting:</p>
-            <pre className="mt-2 bg-neutral-950/5 dark:bg-neutral-50/5 p-3 rounded-lg overflow-auto text-xs">{`"gallery": [
-  { "src": "https://.../photo1.jpg", "alt": "Speaking at ..." },
-  { "src": "https://.../photo2.jpg", "alt": "Workshop" }
-]`}</pre>
-          </div>
+          <p className="text-center text-gray-500 dark:text-gray-400">
+            Loading gallery images...
+          </p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {data.gallery.map((img: any, i: number) => (
-              <figure key={i} className="overflow-hidden rounded-2xl border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.src} alt={img.alt || "photo"} className="w-full h-44 object-cover" />
-                {img.alt && <figcaption className="p-2 text-xs opacity-80">{img.alt}</figcaption>}
-              </figure>
-            ))}
-          </div>
+          <ImageCarousel images={data.gallery} />
         )}
       </Section>
 
