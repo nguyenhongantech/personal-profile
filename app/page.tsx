@@ -154,13 +154,16 @@ const DEFAULT_CONTENT = {
   },
   masters: {
     title: "Why the Master’s in Management & Digital Business?",
-    intro:
-      "This program is the next logical step to integrate corporate & startup experience with advanced management and digital strategy.",
+    intro: [
+      "This Master's program is not just a degree to me—it is the next logical step in my professional journey.",
+      "It will allow me to:",
+    ],
     bullets: [
-      "Strengthen academic foundation in digital management & strategic leadership",
-      "Bridge practical experience (Amazon, UPS, startups) with theory",
-      "Enrich the classroom with real-world case studies and cross-border insights"
-    ]
+      "Strengthen my academic foundation in digital management and strategic leadership.",
+      "Integrate corporate and startup experience with advanced theoretical knowledge.",
+      "Exchange real-world insights from Amazon, UPS, and startups with classmates and professors, enriching the learning environment."
+    ],
+    outtro: "I view this program as a mutual growth opportunity—a platform to learn, share, and contribute.",
   },
   vision: {
     title: "Vision Beyond Graduation",
@@ -726,12 +729,16 @@ export default function ProfileSite() {
 
       {/* Master's Motivation */}
       <Section title={data.masters.title} icon={<GraduationCap className="w-6 h-6"/>} wow>
-        <p className="mb-3">{data.masters.intro}</p>
+        {data.masters.intro.map((intro: string, i: number) => (
+          <p className="mb-3" key={i}>{intro}</p>
+        ))}
         <ul className="list-disc pl-5 space-y-1">
           {data.masters.bullets.map((b: string, i: number) => (
             <li key={i}>{b}</li>
           ))}
         </ul>
+        <p className="mb-3">{data.masters.outtro}</p>
+
       </Section>
 
       {/* Vision */}
