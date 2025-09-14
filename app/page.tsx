@@ -106,12 +106,11 @@ const DEFAULT_CONTENT = {
     title: "Speaking & Public Engagements",
     items: [
       {
-        event: "VIEE 2025 – Vietnam International Electronics Industry Expo",
-        note: "International-scale event"
+        event: "I am actively pursuing a project to support Vietnamese manufacturers—especially in the wooden industry—in transitioning from B2B (OEM) to developing their own global brands. This transformation leverages Vietnam’s natural strengths while embracing innovation, digital tools, and sustainable branding strategies.",
       },
-      { event: "From Local to Global", note: "UEF & JCI hosted" },
-      { event: "Amazon Education Programs", note: "Training Vietnamese SMEs" },
-      { event: "National workshops & conferences", note: "Covered by top media" }
+      { event: "Through collaboration with industry associations (HAWA, BIFA, FPA) and government-led programs, I contribute to initiatives that help SMEs strengthen their global positioning, digital export readiness, and long-term competitiveness." },
+      { event: "As a young woman in business, I’m proud to represent the next generation of changemakers. I’ve been invited to speak at leading national and international events such as: VIEE 2025 – Vietnam International Electronics Industry, From Local to Global (UEF & JCI hosted), Amazon Education Programs (Training Vietnamese SMEs), etc. where I share insights on brand innovation, cross-border e-commerce, and empowering local industries through digital transformation." },
+      { event: "My contributions have been featured in some media coverages, recognizing my role in amplifying the voice of Vietnamese manufacturers on the global stage." }
     ],
     media: [
       { label: "HCMCPV.org.vn", href: "https://hcmcpv.org.vn/tin-tuc/day-manh-xuat-khau-hang-hoa-viet-nam-ra-thi-truong-quoc-te-1491923499" },
